@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  createdAt   DateTime  @default(now())
+  availabilities Availability[]
+}
+
+model Availability {
+  id        Int      @id @default(autoincrement())
+  name      String
+  times     String   // We'll store selected times as JSON
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id])
+}
