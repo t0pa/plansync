@@ -1,5 +1,28 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
+
+export  function MyButton() {
+  // 2. Call the hook to get the navigation function
+  const navigate = useNavigate();
+
+  // 3. Define the function to handle the button click
+  const handleCreateEvent = () => {
+    // Navigate to the '/about' path
+    navigate('/event/1');
+    // You can also pass state: navigate('/about', { state: { fromHome: true } });
+  };
+  
+  return( <button
+          onClick={handleCreateEvent} // Event handler in a real React app
+         
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:scale-[1.01]"
+        >
+          Create Event
+        </button>);
+ 
+}
 const Home = () => {
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-slate-900 p-4 sm:p-6 lg:p-8">
@@ -25,13 +48,7 @@ const Home = () => {
         </div>
 
         {/* Create Event Button */}
-        <button
-          // onClick={handleCreateEvent} // Event handler in a real React app
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:scale-[1.01]"
-        >
-          Create Event
-        </button>
-
+        <MyButton></MyButton>
         {/* Optional Minimalistic Footer/Note */}
         <p className="text-center text-xs text-gray-400 pt-2">
           Powered by t0pa

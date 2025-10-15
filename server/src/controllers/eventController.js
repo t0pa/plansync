@@ -13,6 +13,7 @@ export const getAllEvents = async (req, res) => {
 export const createEvent = async (req, res) => {
   try {
     const { title, description } = req.body;
+    const adminToken=crypto.randomUUID();
     const newEvent = await prisma.event.create({
       data: { title, description },
     });

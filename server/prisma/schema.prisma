@@ -12,10 +12,10 @@ datasource db {
 }
 
 model Event {
-  id          Int       @id @default(autoincrement())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  adminToken String?
+  adminToken String? @default(cuid())
   createdAt   DateTime  @default(now())
   availabilities Availability[]
 }
@@ -24,6 +24,6 @@ model Availability {
   id        Int      @id @default(autoincrement())
   name      String
   times     String   // We'll store selected times as JSON
-  eventId   Int
+  eventId   String
   event     Event    @relation(fields: [eventId], references: [id])
 }
