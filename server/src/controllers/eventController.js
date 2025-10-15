@@ -21,3 +21,19 @@ export const createEvent = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+export const deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.event.delete({
+      where: { id: Number(id) },
+    });
+    res.json({ message: "Event deleted successfully" });
+  } catch (error) {
+console.error(error);
+    if (error.code === "P2025") {
+      res.status(404).json({ error: "Event not found" });
+    } else {
+      res.status(500).json({ error: error.message });
+    }   }
+};
