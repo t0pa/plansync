@@ -10,10 +10,24 @@ export const getAllEvents = async (req, res) => {
   }
 };
 
+export const getById = async (req, res) => {
+  try {
+    const event = await prisma.event.findUnique({
+      where : {id : req.params.id},
+    });
+
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+
+    res.json(event);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createEvent = async (req, res) => {
   try {
     const { title, description } = req.body;
-    const adminToken=crypto.randomUUID();
     const newEvent = await prisma.event.create({
       data: { title, description },
     });

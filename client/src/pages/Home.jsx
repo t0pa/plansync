@@ -1,6 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config';
+
+
 
 
 export  function MyButton() {
@@ -8,9 +11,24 @@ export  function MyButton() {
   const navigate = useNavigate();
 
   // 3. Define the function to handle the button click
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
+
+    const title = document.getElementById("eventName").value;
+    const description= document.getElementById("descriptionName").value;
+
+    const response = await fetch (`${API_BASE_URL}/api/events`,{
+      method : "POST",
+      headers : {
+        "Content-Type" : "application/json",
+    
+      },
+      body: JSON.stringify({title, description})
+    }
+    ); 
+    const event =await response.json();
+    
     // Navigate to the '/about' path
-    navigate('/event/1');
+    navigate(`/event/${event.id}`);
     // You can also pass state: navigate('/about', { state: { fromHome: true } });
   };
   
@@ -41,8 +59,22 @@ const Home = () => {
             type="text"
             id="eventName"
             name="eventName"
-            placeholder="e.g., Team Meeting, Birthday Party..."
+            placeholder="Enter your event name"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-white text-base"
+            // You would use state here in a real React app: value={eventName} onChange={handleChange}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="descriptionName" className="block text-sm font-medium text-gray-700  mb-1">
+            Description
+          </label>
+          <input
+            type="text"
+            id="descriptionName"
+            name="descriptionName"
+            placeholder="Enter description here"
+            className="w-full px-4 py-6  rounded-lg transition duration-150 ease-in-out text-white text-base "
             // You would use state here in a real React app: value={eventName} onChange={handleChange}
           />
         </div>

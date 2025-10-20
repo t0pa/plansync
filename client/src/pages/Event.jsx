@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE_URL from '../config';
+import { useParams } from 'react-router-dom';
 
+
+const {id} = useParams();
 // --- Configuration and Utility Functions ---
 
-// *** REAL API CONFIGURATION ***
-const API_BASE_URL = 'https://api.youreventscheduler.com'; 
-const EVENT_ID = 'event_123'; // *** CRITICAL: In a real app, this comes from the URL (e.g., /events/event_123) ***
+useEffect(() => {
+  const fetchEvent = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/events/${id}`);
+      const data = await response.json();
+      setEvent(data);
+    } catch (err) {
+      console.error("Error fetching event:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchEvent();
+}, [id]);
+
+
+
+
+const EVENT_ID = 'event_123'; 
 
 // --- Event Ownership Configuration (No login needed) ---
 // The key stored in local storage must be unique per event!
