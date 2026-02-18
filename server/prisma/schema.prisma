@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
@@ -12,18 +11,29 @@ datasource db {
 }
 
 model Event {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  adminToken String? @default(cuid())
-  createdAt   DateTime  @default(now())
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  createdAt      DateTime       @default(now())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
   availabilities Availability[]
 }
 
 model Availability {
-  id        Int      @id @default(autoincrement())
-  name      String
-  times     String   // We'll store selected times as JSON
-  eventId   String
-  event     Event    @relation(fields: [eventId], references: [id])
+  id      Int    @id @default(autoincrement())
+  name    String
+  times   String // We'll store selected times as JSON
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id])
+}
+
+model User {
+  id               String    @id @default(cuid())
+  email            String    @unique
+  password         String
+  createdAt        DateTime  @default(now())
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  events           Event[]
 }

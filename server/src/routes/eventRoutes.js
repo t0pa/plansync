@@ -4,7 +4,7 @@ import { getAllEvents, createEvent, deleteEvent, getById } from "../controllers/
 const router = express.Router();
 router.get("/:id", getById);
 router.get("/", getAllEvents);
-router.post("/", createEvent);
+router.post("/", authenticate, createEvent);
 router.delete("/:id", deleteEvent); 
 
 export default router;
