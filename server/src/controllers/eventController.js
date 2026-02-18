@@ -13,11 +13,14 @@ export const getAllEvents = async (req, res) => {
 export const getById = async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
-      where : {id : req.params.id},
+      where: { id: req.params.id },
+      // ❌ REMOVED: availabilities: true (it's not a relation!)
+      include: {
+        user: true, // ✅ KEEP: This IS a relation
+      },
     });
 
     if (!event) return res.status(404).json({ error: "Event not found" });
-
 
     res.json(event);
   } catch (error) {
@@ -50,15 +53,59 @@ export const createEvent = async (req, res) => {
 export const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.event.delete({
-      where: { id },
-    });
+    const userId = req.userId; // From auth middleware
+
+    // Check if event exists and user is the creator
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
+    }
+
+    if (event.userId !== userId) {
+      return res
+        .status(403)
+        .json({ error: "Only the event creator can delete this event" });
+    }
+
+    await prisma.event.delete({ where: { id } });
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
-console.error(error);
-    if (error.code === "P2025") {
-      res.status(404).json({ error: "Event not found" });
-    } else {
-      res.status(500).json({ error: error.message });
-    }   }
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+// req.userId available from authenticate
+export const addAvailability = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { slots, name } = req.body; // name optional; use req.userId if needed
+    const userId = req.userId;
+
+    if (!Array.isArray(slots))
+      return res.status(400).json({ error: "Invalid slots" });
+
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) return res.status(404).json({ error: "Event not found" });
+
+    // existing availabilities (ensure array)
+    const existing = event.availabilities ?? [];
+    // remove previous submissions from this user
+    const filtered = existing.filter((a) => a.userId !== userId);
+    // dedupe slots and ensure consistent array
+    const uniqueSlots = Array.from(new Set(slots.map((s) => String(s))));
+
+    // add new submission
+    filtered.push({ userId, name: name || userId, times: uniqueSlots });
+
+    const updated = await prisma.event.update({
+      where: { id },
+      data: { availabilities: filtered },
+    });
+
+    res.status(201).json({ availabilities: updated.availabilities });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };

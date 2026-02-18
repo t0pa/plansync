@@ -1,46 +1,69 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from '../config';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../config";
+import { useAuth } from "../context/authContext";
 
-
-
-
-export  function MyButton() {
-  // 2. Call the hook to get the navigation function
+export function MyButton() {
   const navigate = useNavigate();
+  const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // 3. Define the function to handle the button click
   const handleCreateEvent = async () => {
-
     const title = document.getElementById("eventName").value;
-    const description= document.getElementById("descriptionName").value;
+    const description = document.getElementById("descriptionName").value;
 
-    const response = await fetch (`${API_BASE_URL}/api/events`,{
-      method : "POST",
-      headers : {
-        "Content-Type" : "application/json",
-    
-      },
-      body: JSON.stringify({title, description})
+    if (!title.trim()) {
+      setError("Event name is required");
+      return;
     }
-    ); 
-    const event =await response.json();
-    
-    // Navigate to the '/about' path
-    navigate(`/event/${event.id}`);
-    // You can also pass state: navigate('/about', { state: { fromHome: true } });
+
+    if (!token) {
+      setError("You must be logged in to create an event");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/events`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ title, description }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create event");
+      }
+
+      const event = await response.json();
+      navigate(`/event/${event.id}`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  return( <button
-          onClick={handleCreateEvent} // Event handler in a real React app
-         
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:scale-[1.01]"
-        >
-          Create Event
-        </button>);
- 
+
+  return (
+    <>
+      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      <button
+        onClick={handleCreateEvent}
+        disabled={loading}
+        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:scale-[1.01] disabled:opacity-50"
+      >
+        {loading ? "Creating..." : "Create Event"}
+      </button>
+    </>
+  );
 }
+
 const Home = () => {
   return (
     <div className="min-h-screen w-screen flex items-center justify-center bg-slate-900 p-4 sm:p-6 lg:p-8">
@@ -52,7 +75,10 @@ const Home = () => {
 
         {/* Event Name Input */}
         <div>
-          <label htmlFor="eventName" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="eventName"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Event Name
           </label>
           <input
@@ -60,22 +86,23 @@ const Home = () => {
             id="eventName"
             name="eventName"
             placeholder="Enter your event name"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-white text-base"
-            // You would use state here in a real React app: value={eventName} onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-gray-900 text-base"
           />
         </div>
 
         <div>
-          <label htmlFor="descriptionName" className="block text-sm font-medium text-gray-700  mb-1">
+          <label
+            htmlFor="descriptionName"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Description
           </label>
-          <input
-            type="text"
+          <textarea
             id="descriptionName"
             name="descriptionName"
             placeholder="Enter description here"
-            className="w-full px-4 py-6  rounded-lg transition duration-150 ease-in-out text-white text-base "
-            // You would use state here in a real React app: value={eventName} onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out text-gray-900 text-base"
+            rows="4"
           />
         </div>
 

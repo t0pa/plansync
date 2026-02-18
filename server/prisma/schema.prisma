@@ -17,17 +17,10 @@ model Event {
   createdAt      DateTime       @default(now())
   userId         String
   user           User           @relation(fields: [userId], references: [id])
-  availabilities Availability[]
+  // Store all participant submissions in a JSON array on the Event.
+  // Each entry: { userId: string, name?: string, times: string[] }
+  availabilities  Json?
 }
-
-model Availability {
-  id      Int    @id @default(autoincrement())
-  name    String
-  times   String // We'll store selected times as JSON
-  eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
-}
-
 model User {
   id               String    @id @default(cuid())
   email            String    @unique
