@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config";
 import { useAuth } from "../context/authContext";
 
@@ -55,6 +55,12 @@ const EventPage = () => {
 
   // Quick Access State
   const [activePresetDay, setActivePresetDay] = useState(eventDays[0].fullDate);
+
+  // Delete State
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchEventAndAvailabilities = useCallback(async () => {
     try {
@@ -156,6 +162,24 @@ const EventPage = () => {
     }
   };
 
+  const handleDeleteEvent = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/events/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) throw new Error("Failed to delete event");
+      setMessage({ type: "success", text: "Event deleted successfully!" });
+      setTimeout(() => navigate("/"), 1500);
+    } catch (err) {
+      setMessage({ type: "error", text: err.message });
+      setIsDeleting(false);
+    }
+  };
+
   const getSlotCounts = () => {
     const counts = {};
     availabilities.forEach((avail) => {
@@ -189,9 +213,58 @@ const EventPage = () => {
         </div>
       )}
 
+      {/* DELETE CONFIRMATION MODAL */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Delete Event
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this event? This action cannot be
+              undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteEvent}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="max-w-7xl mx-auto mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900">{event.title}</h1>
-        <p className="text-gray-600 mt-2">{event.description}</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-4xl font-extrabold text-gray-900">
+              {event.title}
+            </h1>
+            <p className="text-gray-600 mt-2">{event.description}</p>
+          </div>
+          {token &&
+            (() => {
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              const userId = payload.userId || payload.sub;
+              return userId === event.userId ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors"
+                >
+                  Delete Event
+                </button>
+              ) : null;
+            })()}
+        </div>
       </header>
 
       {/* QUICK ACCESS BAR - TOP OF TABLE */}
@@ -223,6 +296,15 @@ const EventPage = () => {
               {type}
             </button>
           ))}
+          <button
+            onClick={() => {
+              setSelectedSlots({});
+              setMySubmissionSlots({});
+            }}
+            className="px-4 py-1.5 bg-red-50 hover:bg-red-600 hover:text-white text-red-700 rounded-lg text-xs font-bold uppercase transition-all border border-red-100"
+          >
+            Deselect All
+          </button>
         </div>
         <span className="text-[10px] text-gray-400 font-medium italic ml-auto">
           Click presets to auto-fill the selected date
