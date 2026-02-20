@@ -14,20 +14,42 @@ export const getById = async (req, res) => {
   try {
     const event = await prisma.event.findUnique({
       where: { id: req.params.id },
-      // ❌ REMOVED: availabilities: true (it's not a relation!)
-      include: {
-        user: true, // ✅ KEEP: This IS a relation
-      },
+      include: { user: true }, // This gets the event creator
     });
 
     if (!event) return res.status(404).json({ error: "Event not found" });
 
-    res.json(event);
+    // --- NEW LOGIC TO GET EMAILS ---
+    const availData = event.availabilities || [];
+
+    // 1. Get all unique User IDs from the availabilities list
+    const participantIds = [...new Set(availData.map((a) => a.userId))];
+
+    // 2. Fetch those users from the database
+    const users = await prisma.user.findMany({
+      where: { id: { in: participantIds } },
+      select: { id: true, email: true }, // Only grab what we need
+    });
+
+    // 3. Attach the email to each availability object
+    const availabilitiesWithEmails = availData.map((avail) => {
+      const userMatch = users.find((u) => u.id === avail.userId);
+      return {
+        ...avail,
+        email: userMatch ? userMatch.email : "Unknown User",
+      };
+    });
+
+    // 4. Send back the event with the "hydrated" list
+    res.json({
+      ...event,
+      availabilities: availabilitiesWithEmails,
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 };
-
 export const createEvent = async (req, res) => {
   try {
     const { title, description } = req.body;
