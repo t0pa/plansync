@@ -5,13 +5,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import config from "../config.js";
 
-const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: config.DATABASE_URL,
-    },
-  },
-});
+const prisma = new PrismaClient();
 const JWT_SECRET = config.JWT_SECRET;
 
 export const register = async (req, res) => {
