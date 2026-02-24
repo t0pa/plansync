@@ -1,3 +1,5 @@
+// Debug: print DATABASE_URL to verify environment variable is loaded
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 // src/server.js
 import express from "express";
 import cors from "cors";
