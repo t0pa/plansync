@@ -1,0 +1,8 @@
+# Environment variables
+.env
+# Node modules
+node_modules/
+# Build outputs
+dist/
+# Local config
+server/src/config.js
