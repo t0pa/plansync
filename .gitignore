@@ -5,4 +5,3 @@ node_modules/
 # Build outputs
 dist/
 # Local config
-server/src/config.js
