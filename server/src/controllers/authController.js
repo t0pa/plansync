@@ -18,6 +18,12 @@ export const register = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
@@ -26,7 +32,8 @@ export const register = async (req, res) => {
 
     res.status(201).json({ message: "User created" });
   } catch (err) {
-    res.status(400).json({ error: "Email already exists" });
+    // For debugging, send the real error (remove in production)
+    res.status(500).json({ error: err.message });
   }
 };
 
