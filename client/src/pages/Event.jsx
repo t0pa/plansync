@@ -17,17 +17,19 @@ const getDatesForWeeks = (weeks = 4) => {
   const dates = [];
   const today = new Date();
 
-  // Generate dates starting from today going backwards
-  for (let i = weeks * 7 - 1; i >= 0; i--) {
+  // Generate dates starting from today going forward
+  for (let i = 0; i < weeks * 7; i++) {
     const date = new Date(today);
-    date.setDate(today.getDate() - i);
+    date.setDate(today.getDate() + i);
     dates.push({
       fullDate: date.toISOString().split("T")[0],
       displayDay: date.toLocaleDateString("en-US", { weekday: "short" }),
-      displayDate: date.toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "2-digit",
-      }),
+      displayDate: date
+        .toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+        })
+        .slice(0, 5), // Ensures DD/MM format
     });
   }
   return dates;
