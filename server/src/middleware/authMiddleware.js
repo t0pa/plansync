@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-
-const JWT_SECRET = "supersecret";
+import config from "../config.js";
+const JWT_SECRET = config.JWT_SECRET;
 
 export const authenticate = (req, res, next) => {
   console.log("Auth middleware called on", req.method, req.path);
